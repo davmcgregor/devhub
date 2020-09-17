@@ -1,3 +1,4 @@
+require('dotenv').config()
 const express = require('express');
 const router = express.Router();
 const gravatar = require('gravatar');
@@ -62,11 +63,17 @@ async (req, res) => {
   
   // return jsonwebtoken
 
-  res.send('User registered');
-    
+  jwt.sign(
+    { id: newUser.rows[0].user_id }, 
+    process.env.jwtSecret, 
+    { expiresIn: 3600 },
+    (err, token) => {
+      if(err) throw err;
+      res.json({ token });
+    }); 
+
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error')
+    res.status(500).json({ errors: [ { msg: err.message }]})
   }
 });
 
