@@ -30,4 +30,4 @@ CREATE TABLE profiles (
     FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
 
-insert into profiles (user_id, profile_bio) values ('e0dd0833-ca76-4f45-bbe0-a0b729f9beda', 'here is a sample bio');
+CREATE UNIQUE INDEX user_unique_idx on profiles (user_id);
