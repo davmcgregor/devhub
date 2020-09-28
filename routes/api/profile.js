@@ -107,4 +107,26 @@ router.post(
   }
 );
 
+// @route GET api/profile/user/:user_id
+// @desc Get profile by user ID
+// @access Public
+
+router.get('/user/:user_id', async (req, res) => {
+  try {
+    const profile = await pool.query(
+      'SELECT user_id, user_name, user_avatar, profile_company, profile_website, profile_location, profile_status, profile_skills, profile_bio, profile_githubusername, profile_social FROM users INNER JOIN profiles USING(user_id) WHERE user_id::text = $1',
+      [req.params.user_id]
+    );
+
+    if (!profile.rows.length) {
+      return res.status(400).json({ msg: 'Profile not found' });
+    }
+
+    res.json(profile.rows);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+});
+
 module.exports = router;
