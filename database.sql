@@ -11,3 +11,23 @@ CREATE TABLE users (
     registered_at timestamptz DEFAULT Now(),
     PRIMARY KEY(user_id)
 );
+
+CREATE TABLE profiles (
+    profile_id SERIAL,
+    user_id uuid,
+    profile_company VARCHAR(255),
+    profile_website VARCHAR(255),
+    profile_location VARCHAR(255),
+    profile_status VARCHAR(255),
+    profile_skills VARCHAR(255)[],
+    profile_bio VARCHAR(255),
+    profile_githubusername VARCHAR(255),
+    profile_experience jsonb,
+    profile_education jsonb,
+    profile_social jsonb,
+    profile_date timestamptz DEFAULT Now(),
+    PRIMARY KEY(profile_id),
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+
+insert into profiles (user_id, profile_bio) values ('e0dd0833-ca76-4f45-bbe0-a0b729f9beda', 'here is a sample bio');
