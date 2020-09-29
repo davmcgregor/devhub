@@ -107,6 +107,21 @@ router.post(
   }
 );
 
+// @route    GET api/profile
+// @desc     Get all profiles
+// @access   Public
+router.get('/', async (req, res) => {
+  try {
+    const profiles = await await pool.query(
+      'SELECT user_id, user_name, user_avatar, profile_company, profile_website, profile_location, profile_status, profile_skills, profile_bio, profile_githubusername, profile_social FROM users INNER JOIN profiles USING(user_id)'
+    );
+    res.json(profiles.rows);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
 // @route GET api/profile/user/:user_id
 // @desc Get profile by user ID
 // @access Public
@@ -128,5 +143,32 @@ router.get('/user/:user_id', async (req, res) => {
     res.status(500).send('Server error');
   }
 });
+
+// @route DELETE api/profile
+// @desc Delete profile, user & posts
+// @access Private
+
+router.delete('/', auth, async (req, res) => {
+  try {
+    // @todo - remove users posts
+
+    // Remove profile
+    await pool.query('DELETE FROM profiles WHERE user_id = $1 RETURNING *', [
+      req.user.id,
+    ]);
+
+    //Remove user
+    await pool.query('DELETE FROM users WHERE user_id = $1 RETURNING *', [
+      req.user.id,
+    ]);
+
+    res.json({ msg: 'User deleted' });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+
 
 module.exports = router;
