@@ -14,7 +14,7 @@ CREATE TABLE users (
 
 CREATE TABLE profiles (
     profile_id SERIAL,
-    user_id uuid,
+    user_id uuid NOT NULL,
     profile_company VARCHAR(255),
     profile_website VARCHAR(255),
     profile_location VARCHAR(255),
@@ -22,12 +22,26 @@ CREATE TABLE profiles (
     profile_skills VARCHAR(255)[],
     profile_bio VARCHAR(255),
     profile_githubusername VARCHAR(255),
-    profile_experience jsonb,
-    profile_education jsonb,
-    profile_social jsonb,
     profile_date timestamptz DEFAULT Now(),
     PRIMARY KEY(profile_id),
-    FOREIGN KEY (user_id) REFERENCES users(user_id)
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE;
 );
 
 CREATE UNIQUE INDEX user_unique_idx on profiles (user_id);
+
+CREATE TABLE experiences (
+    experience_id SERIAL,
+    profile_id INT NOT NULL,
+    experience_title: VARCHAR(255),
+	experience_company VARCHAR(255),
+	experience_location VARCHAR(255),
+	experience_from VARCHAR(255),
+    experence_to VARCHAR(255),
+	experience_current BOOLEAN,
+	experience_description TEXT,
+    PRIMARY KEY(experience_id),
+    FOREIGN KEY (profile_id) REFERENCES profiles(profile_id) ON DELETE CASCADE;
+);
+
+
+
