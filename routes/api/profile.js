@@ -113,7 +113,7 @@ router.post(
 router.get('/', async (req, res) => {
   try {
     const profiles = await await pool.query(
-      'SELECT user_id, user_name, user_avatar, profile_company, profile_website, profile_location, profile_status, profile_skills, profile_bio, profile_githubusername, profile_social, profile_experience FROM users INNER JOIN profiles USING(user_id)'
+      'SELECT user_id, user_name, user_avatar, profile_company, profile_website, profile_location, profile_status, profile_skills, profile_bio, profile_githubusername, profile_social FROM users INNER JOIN profiles USING(user_id)'
     );
     res.json(profiles.rows);
   } catch (err) {
@@ -129,7 +129,7 @@ router.get('/', async (req, res) => {
 router.get('/user/:user_id', async (req, res) => {
   try {
     const profile = await pool.query(
-      'SELECT user_id, user_name, user_avatar, profile_company, profile_website, profile_location, profile_status, profile_skills, profile_bio, profile_githubusername, profile_social, profile_experience FROM users INNER JOIN profiles USING(user_id) WHERE user_id::text = $1',
+      'SELECT user_id, user_name, user_avatar, profile_company, profile_website, profile_location, profile_status, profile_skills, profile_bio, profile_githubusername, profile_social FROM users INNER JOIN profiles USING(user_id) WHERE user_id::text = $1',
       [req.params.user_id]
     );
 
