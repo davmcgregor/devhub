@@ -113,7 +113,7 @@ router.post(
 router.get('/', async (req, res) => {
   try {
     const profiles = await await pool.query(
-      'SELECT user_id, user_name, user_avatar, profile_company, profile_website, profile_location, profile_status, profile_skills, profile_bio, profile_githubusername, profile_social FROM users INNER JOIN profiles USING(user_id)'
+      'SELECT u.user_id, u.user_name, u.user_avatar, p.profile_company, p.profile_website, p.profile_location, p.profile_status, p.profile_skills, p.profile_bio, p.profile_githubusername, p.profile_social, to_json(array_agg(e.*)) AS experiences FROM users u INNER JOIN profiles p ON p.user_id = u.user_id LEFT JOIN experiences e ON e.user_id = p.user_id GROUP BY u.user_id, p.profile_company, p.profile_website, p.profile_location, p.profile_status, p.profile_skills, p.profile_bio, p.profile_githubusername, p.profile_social'
     );
     res.json(profiles.rows);
   } catch (err) {
@@ -129,7 +129,7 @@ router.get('/', async (req, res) => {
 router.get('/user/:user_id', async (req, res) => {
   try {
     const profile = await pool.query(
-      'SELECT user_id, user_name, user_avatar, profile_company, profile_website, profile_location, profile_status, profile_skills, profile_bio, profile_githubusername, profile_social FROM users INNER JOIN profiles USING(user_id) WHERE user_id::text = $1',
+      'SELECT u.user_id, u.user_name, u.user_avatar, p.profile_company, p.profile_website, p.profile_location, p.profile_status, p.profile_skills, p.profile_bio, p.profile_githubusername, p.profile_social, to_json(array_agg(e.*)) AS experiences FROM users u INNER JOIN profiles p ON p.user_id = u.user_id LEFT JOIN experiences e ON e.user_id = p.user_id WHERE u.user_id::text = $1 GROUP BY u.user_id, p.profile_company, p.profile_website, p.profile_location, p.profile_status, p.profile_skills, p.profile_bio, p.profile_githubusername, p.profile_social',
       [req.params.user_id]
     );
 
@@ -169,11 +169,11 @@ router.delete('/', auth, async (req, res) => {
   }
 });
 
-// @route PUT api/profile/experience
+// @route INSERT api/profile/experience
 // @desc Add profile experience
 // @access Private
 
-router.put(
+router.post(
   '/experience',
   [
     auth,
@@ -199,7 +199,7 @@ router.put(
       description,
     } = req.body;
 
-    const newExp = {
+    const experienceFields = {
       title,
       company,
       location,
@@ -210,24 +210,21 @@ router.put(
     };
 
     try {
-      const profile = await pool.query(
-        'SELECT user_id, user_name, user_avatar, profile_company, profile_website, profile_location, profile_status, profile_skills, profile_bio, profile_githubusername, profile_social, profile_experience FROM users INNER JOIN profiles USING(user_id) WHERE user_id::text = $1',
-        [req.user.id]
+      const experience = await pool.query(
+        'INSERT INTO experiences (user_id, experience_title, experience_company, experience_location, experience_from, experence_to, experience_current, experience_description) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
+        [
+          req.user.id,
+          experienceFields.title,
+          experienceFields.company,
+          experienceFields.location,
+          experienceFields.from,
+          experienceFields.to,
+          experienceFields.current,
+          experienceFields.description,
+        ]
       );
 
-      if (profile.rows[0]['profile_experience'] === null) {
-        await pool.query(
-          "UPDATE profiles SET profile_experience = COALESCE(profile_experience, '[]'::jsonb) || $1::jsonb WHERE user_id = $2",
-          [newExp, req.user.id]
-        );
-      } else {
-        await pool.query(
-          'UPDATE profiles SET profile_experience = profile_experience || $1::jsonb WHERE user_id = $2',
-          [newExp, req.user.id]
-        );
-      }
-
-      res.json({ msg: 'Experience updated' });
+      res.json(experience.rows[0]);
     } catch (err) {
       console.error(err.message);
       res.status(500).send('Server Error');

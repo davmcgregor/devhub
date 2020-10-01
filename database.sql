@@ -70,6 +70,6 @@ SELECT  u.user_id, u.user_name, u.user_avatar,
         to_json(array_agg(e.*)) AS experiences
 FROM    users u
 INNER JOIN profiles p ON p.user_id = u.user_id
-INNER JOIN experiences e ON e.user_id = p.user_id GROUP BY u.user_id, p.profile_company, p.profile_website, p.profile_location, p.profile_status, p.profile_skills, p.profile_bio, p.profile_githubusername, p.profile_social;
+LEFT JOIN experiences e ON e.user_id = p.user_id GROUP BY u.user_id, p.profile_company, p.profile_website, p.profile_location, p.profile_status, p.profile_skills, p.profile_bio, p.profile_githubusername, p.profile_social;
 
 SELECT user_id, user_name, user_avatar, profile_company, profile_website, profile_location, profile_status, profile_skills, profile_bio, profile_githubusername, profile_social FROM users INNER JOIN profiles USING(user_id) WHERE user_id::text = '528257d7-917f-43f1-83e9-a0e217d35cdc';
