@@ -58,3 +58,34 @@ CREATE TABLE educations (
     FOREIGN KEY (education_user_id) REFERENCES profiles(profile_user_id) ON DELETE CASCADE
 );
 
+CREATE TABLE posts (
+    post_id SERIAL,
+    post_user_id uuid NOT NULL,
+    post_text TEXT,
+    post_avatar VARCHAR(255),
+    post_created_at timestamptz DEFAULT Now(),
+    PRIMARY KEY(post_id),
+    FOREIGN KEY (post_user_id) REFERENCES users(user_id)
+);
+
+CREATE TABLE likes (
+    like_id SERIAL,
+    like_user_id uuid NOT NULL,
+    like_post_id INT NOT NULL,
+    PRIMARY KEY(like_id),
+    FOREIGN KEY (like_user_id) REFERENCES users(user_id),
+    FOREIGN KEY (like_post_id) REFERENCES posts(post_id)
+);
+
+CREATE UNIQUE INDEX user_post_idx on likes (like_user_id, like_post_id);
+
+CREATE TABLE comments (
+    comment_id SERIAL,
+    comment_user_id uuid NOT NULL,
+    comment_post_id INT NOT NULL,
+    comment_text TEXT NOT NULL,
+    comment_created_at timestamptz DEFAULT Now(),
+    PRIMARY KEY(comment_id),
+    FOREIGN KEY (comment_user_id) REFERENCES users(user_id),
+    FOREIGN KEY (comment_post_id) REFERENCES posts(post_id)
+);
