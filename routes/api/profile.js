@@ -115,7 +115,7 @@ router.post(
 router.get('/', async (req, res) => {
   try {
     const profiles = await await pool.query(
-      'SELECT u.user_id, u.user_name, u.user_avatar, p.profile_company, p.profile_website, p.profile_location, p.profile_status, p.profile_skills, p.profile_bio, p.profile_githubusername, p.profile_social, to_json(array_agg(e.*)) AS experiences, to_json(array_agg(ed.*)) AS education FROM users u INNER JOIN profiles p ON p.profile_user_id = u.user_id LEFT JOIN experiences e ON e.experience_user_id = p.profile_user_id LEFT JOIN educations ed ON ed.education_user_id = p.profile_user_id GROUP BY u.user_id, p.profile_company, p.profile_website, p.profile_location, p.profile_status, p.profile_skills, p.profile_bio, p.profile_githubusername, p.profile_social'
+      'SELECT u.user_id, u.user_name, u.user_avatar, p.*, exp.*, edu.* FROM users u INNER JOIN profiles p ON p.profile_user_id = u.user_id LEFT JOIN LATERAL (SELECT json_agg(exp) as experience from experiences exp WHERE exp.experience_user_id = u.user_id) exp ON TRUE LEFT JOIN LATERAL (SELECT json_agg(edu) as education from educations edu WHERE edu.education_user_id = u.user_id) edu ON TRUE'
     );
     res.json(profiles.rows);
   } catch (err) {
@@ -131,7 +131,7 @@ router.get('/', async (req, res) => {
 router.get('/user/:user_id', async (req, res) => {
   try {
     const profile = await pool.query(
-      'SELECT u.user_id, u.user_name, u.user_avatar, p.profile_company, p.profile_website, p.profile_location, p.profile_status, p.profile_skills, p.profile_bio, p.profile_githubusername, p.profile_social, to_json(array_agg(e.*)) AS experiences, to_json(array_agg(ed.*)) AS education FROM users u INNER JOIN profiles p ON p.profile_user_id = u.user_id LEFT JOIN experiences e ON e.experience_user_id = p.profile_user_id LEFT JOIN educations ed ON ed.education_user_id = p.profile_user_id WHERE u.user_id::text = $1 GROUP BY u.user_id, p.profile_company, p.profile_website, p.profile_location, p.profile_status, p.profile_skills, p.profile_bio, p.profile_githubusername, p.profile_social',
+      'SELECT u.user_id, u.user_name, u.user_avatar, p.*, exp.*, edu.* FROM users u INNER JOIN profiles p ON p.profile_user_id = u.user_id LEFT JOIN LATERAL (SELECT json_agg(exp) as experience from experiences exp WHERE exp.experience_user_id = u.user_id) exp ON TRUE LEFT JOIN LATERAL (SELECT json_agg(edu) as education from educations edu WHERE edu.education_user_id = u.user_id) edu ON TRUE WHERE u.user_id::text = $1',
       [req.params.user_id]
     );
 

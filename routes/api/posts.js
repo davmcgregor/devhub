@@ -35,13 +35,14 @@ router.post(
 );
 
 // @route GET api/posts
-// @desc Get all post
+// @desc Get all posts
 // @access Private
 
 router.get('/', auth, async (req, res) => {
   try {
+   
     const posts = await pool.query(
-      'SELECT p.post_id, p.post_user_id, p.post_text, p.post_avatar, to_json(array_agg(l.*)) AS likes, to_json(array_agg(c.*)) AS comments FROM posts p LEFT JOIN likes l ON l.like_post_id = p.post_id LEFT JOIN comments c ON c.comment_post_id = p.post_id GROUP BY p.post_id, p.post_user_id, p.post_text, p.post_avatar ORDER BY post_created_at DESC'
+      'SELECT p.*, l.*, c.* FROM posts p LEFT JOIN LATERAL (SELECT json_agg(l) as likes FROM likes l WHERE l.like_post_id = p.post_id) l ON TRUE LEFT JOIN LATERAL (SELECT json_agg(c) AS comments FROM comments c WHERE c.comment_post_id = p.post_id) c on TRUE ORDER BY p.post_created_at DESC' 
     );
 
     res.json(posts.rows);
@@ -58,7 +59,7 @@ router.get('/', auth, async (req, res) => {
 router.get('/:id', auth, async (req, res) => {
   try {
     const posts = await pool.query(
-      'SELECT * FROM posts WHERE post_id = $1 ORDER BY post_created_at DESC',
+      'SELECT p.*, l.*, c.* FROM posts p LEFT JOIN LATERAL (SELECT json_agg(l) as likes FROM likes l WHERE l.like_post_id = p.post_id) l ON TRUE LEFT JOIN LATERAL (SELECT json_agg(c) AS comments FROM comments c WHERE c.comment_post_id = p.post_id) c on TRUE WHERE p.post_id = $1',
       [req.params.id]
     );
 
@@ -194,6 +195,46 @@ router.delete('/unlike/:id', auth, async (req, res) => {
     res.status(500).send('Server Error');
   }
 });
+
+// @route POST api/posts/commnet/:id
+// @desc Add a comment to a post
+// @access Private
+
+router.post(
+  '/comment/:id',
+  [auth, [body('text', 'Text is required').not().isEmpty()]],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { text } = req.body;
+
+    try {
+      // Check post exists
+
+      const checkPost = await pool.query(
+        'SELECT * FROM posts WHERE post_id = $1',
+        [req.params.id]
+      );
+
+      if (!checkPost.rows.length) {
+        return res.status(404).json({ msg: 'Post not found' });
+      }
+
+      const newComment = await pool.query(
+        'INSERT INTO comments(comment_user_id, comment_post_id, comment_text) VALUES ($1, $2, $3) RETURNING *',
+        [req.user.id, req.params.id, text]
+      );
+
+      res.json(newComment.rows[0]);
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send('Server Error');
+    }
+  }
+);
 
 
 module.exports = router;
