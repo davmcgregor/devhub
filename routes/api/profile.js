@@ -5,7 +5,8 @@ const router = express.Router();
 const auth = require('../../middleware/auth');
 const { body, validationResult } = require('express-validator');
 
-const pool = require('../../db');
+const pool = require('../../database/dbconfig');
+const db = require("../../db");
 
 // @route GET api/profile/me
 // @desc Get current users profile
@@ -13,10 +14,7 @@ const pool = require('../../db');
 
 router.get('/me', auth, async (req, res) => {
   try {
-    const profile = await pool.query(
-      'SELECT user_id, user_name, user_avatar FROM users u INNER JOIN profiles p ON u.user_id = $1',
-      [req.user.id]
-    );
+    const profile = await db.getUserProfile(req.user.id);
 
     if (!profile.rows.length) {
       return res.status(400).json({ msg: 'There is no profile for this user' });

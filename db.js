@@ -1,19 +1,30 @@
-const Pool = require("pg").Pool
+const db = require('./database/dbconfig');
 
-const pool = new Pool(
-    process.env.NODE_ENV === 'production' ?
-    {
-        connectionString: process.env.DATABASE_URL,
-        ssl: {
-            rejectUnauthorized: false
-          }
-    }
-    :
-    {
-    user: process.env.DB_USER,
-    host: process.env.DB_HOST,
-    database: process.env.DB_DATABASE,
-    port: process.env.DB_PORT,
-});
+const getUserByToken = (id) => {
+  return db.query(
+    'SELECT user_id, user_name, user_email, user_avatar, registered_at FROM users WHERE user_id = $1',
+    [id]
+  );
+};
 
-module.exports = pool; 
+const getUser = (email) => {
+  return db.query('SELECT * FROM users WHERE user_email = $1', [email]);
+};
+
+const createNewUser = (name, email, hash, avatar) => {
+  return db.query(
+    'INSERT INTO users (user_name, user_email, user_password, user_avatar) VALUES ($1, $2, $3, $4) RETURNING *',
+    [name, email, hash, avatar]
+  );
+};
+
+const getUserProfile = (id) => {
+  return db.query('SELECT user_id, user_name, user_avatar, p.* FROM users u INNER JOIN profiles p ON u.user_id = $1', [id]);
+};
+
+module.exports = {
+  getUserByToken,
+  getUser,
+  createNewUser,
+  getUserProfile
+};

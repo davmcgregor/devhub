@@ -6,17 +6,14 @@ const auth = require('../../middleware/auth');
 const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 
-const pool = require('../../db');
+const db = require('../../db');
 
 // @route    GET api/auth
 // @desc     Get user by token
 // @access   Private
 router.get('/', auth, async (req, res) => {
   try {
-    const user = await pool.query(
-      'SELECT user_id, user_name, user_email, user_avatar, registered_at FROM users WHERE user_id = $1',
-      [req.user.id]
-    );
+    const user = await db.getUserByToken(req.user.id);
 
     res.json(user.rows[0]);
   } catch (err) {
@@ -46,9 +43,7 @@ router.post(
     try {
       // See if user exists
 
-      let user = await pool.query('SELECT * FROM users WHERE user_email = $1', [
-        email,
-      ]);
+      let user = await db.getUser(email);
 
       if (!user.rows.length) {
         return res

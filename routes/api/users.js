@@ -6,7 +6,7 @@ const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-const pool = require('../../db');
+const db = require("../../db");
 
 // @route    POST api/users
 // @desc     Register user
@@ -32,10 +32,8 @@ router.post(
 
     try {
       // See if user exists
-
-      let user = await pool.query('SELECT * FROM users WHERE user_email = $1', [
-        email,
-      ]);
+      
+      let user = await db.getUser(email);
 
       if (user.rows.length) {
         return res
@@ -68,12 +66,9 @@ router.post(
       }
 
       // save User
-
-      const newUser = await pool.query(
-        'INSERT INTO users (user_name, user_email, user_password, user_avatar) VALUES ($1, $2, $3, $4) RETURNING *',
-        [name, email, hash, avatar]
-      );
-
+      
+      const newUser = await db.createNewUser(name, email, hash, avatar)
+      
       // return jsonwebtoken
 
       jwt.sign(

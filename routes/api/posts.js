@@ -3,7 +3,7 @@ const router = express.Router();
 const auth = require('../../middleware/auth');
 const { body, validationResult } = require('express-validator');
 
-const pool = require('../../db');
+const pool = require('../../database/dbconfig');
 
 // @route POST api/posts
 // @desc Create a post
@@ -40,9 +40,8 @@ router.post(
 
 router.get('/', auth, async (req, res) => {
   try {
-   
     const posts = await pool.query(
-      'SELECT p.*, l.*, c.* FROM posts p LEFT JOIN LATERAL (SELECT json_agg(l) as likes FROM likes l WHERE l.like_post_id = p.post_id) l ON TRUE LEFT JOIN LATERAL (SELECT json_agg(c) AS comments FROM comments c WHERE c.comment_post_id = p.post_id) c on TRUE ORDER BY p.post_created_at DESC' 
+      'SELECT p.*, l.*, c.* FROM posts p LEFT JOIN LATERAL (SELECT json_agg(l) as likes FROM likes l WHERE l.like_post_id = p.post_id) l ON TRUE LEFT JOIN LATERAL (SELECT json_agg(c) AS comments FROM comments c WHERE c.comment_post_id = p.post_id) c on TRUE ORDER BY p.post_created_at DESC'
     );
 
     res.json(posts.rows);
@@ -90,7 +89,7 @@ router.delete('/:id', auth, async (req, res) => {
       return res.status(404).json({ msg: 'Post not found' });
     }
 
-    // Check user owns post
+    // Delete if user owns post
 
     const deletePost = await pool.query(
       'DELETE FROM posts WHERE post_id = $1 AND post_user_id = $2 RETURNING *',
@@ -236,5 +235,52 @@ router.post(
   }
 );
 
+// @route DELETE api/posts/commnet/:id/:comment_id
+// @desc Delete comment
+// @access Private
+
+router.delete('/comment/:id/:comment_id', auth, async (req, res) => {
+  try {
+    //check post exists
+
+    const checkPost = await pool.query(
+      'SELECT * FROM posts WHERE post_id = $1',
+      [req.params.id]
+    );
+
+    if (!checkPost.rows.length) {
+      return res.status(404).json({ msg: 'Post not found' });
+    }
+
+    //check comment exists
+
+    const checkComment = await pool.query(
+      'SELECT * FROM comments WHERE comment_id = $1',
+      [req.params.comment_id]
+    );
+
+    if (!checkComment.rows.length) {
+      return res.status(404).json({ msg: 'Comment not found' });
+    }
+
+    // Delete if user owns comment
+
+    const deleteComment = await pool.query(
+      'DELETE FROM comments WHERE comment_id = $1 AND comment_user_id = $2 RETURNING *',
+      [req.params.comment_id, req.user.id]
+    );
+
+    console.log(deleteComment.rows)
+
+    if (!deleteComment.rows.length) {
+      return res.status(401).json({ msg: 'User not authorised' });
+    }
+
+    res.json({ msg: 'Comment removed' });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
 
 module.exports = router;
