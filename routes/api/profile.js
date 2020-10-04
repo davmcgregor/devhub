@@ -5,8 +5,7 @@ const router = express.Router();
 const auth = require('../../middleware/auth');
 const { body, validationResult } = require('express-validator');
 
-const pool = require('../../database/dbconfig');
-const db = require("../../db");
+const db = require('../../db');
 
 // @route GET api/profile/me
 // @desc Get current users profile
@@ -84,19 +83,16 @@ router.post(
     if (instagram) profileFields.social.instagram = instagram;
 
     try {
-      const profile = await pool.query(
-        'INSERT INTO profiles (profile_user_id, profile_company, profile_website, profile_location, profile_status, profile_skills, profile_bio, profile_githubusername, profile_social) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) ON CONFLICT (profile_user_id) DO UPDATE SET profile_company = $2, profile_website = $3, profile_location = $4, profile_status = $5, profile_skills = $6, profile_bio = $7, profile_githubusername = $8, profile_social = $9 RETURNING *',
-        [
-          req.user.id,
-          profileFields.company,
-          profileFields.website,
-          profileFields.location,
-          profileFields.status,
-          profileFields.skills,
-          profileFields.bio,
-          profileFields.githubusername,
-          profileFields.social,
-        ]
+      const profile = await db.createProfile(
+        req.user.id,
+        profileFields.company,
+        profileFields.website,
+        profileFields.location,
+        profileFields.status,
+        profileFields.skills,
+        profileFields.bio,
+        profileFields.githubusername,
+        profileFields.social
       );
 
       res.json(profile.rows[0]);
@@ -112,9 +108,7 @@ router.post(
 // @access   Public
 router.get('/', async (req, res) => {
   try {
-    const profiles = await await pool.query(
-      'SELECT u.user_id, u.user_name, u.user_avatar, p.*, exp.*, edu.* FROM users u INNER JOIN profiles p ON p.profile_user_id = u.user_id LEFT JOIN LATERAL (SELECT json_agg(exp) as experience from experiences exp WHERE exp.experience_user_id = u.user_id) exp ON TRUE LEFT JOIN LATERAL (SELECT json_agg(edu) as education from educations edu WHERE edu.education_user_id = u.user_id) edu ON TRUE'
-    );
+    const profiles = await db.getAllProfiles();
     res.json(profiles.rows);
   } catch (err) {
     console.error(err.message);
@@ -128,10 +122,7 @@ router.get('/', async (req, res) => {
 
 router.get('/user/:user_id', async (req, res) => {
   try {
-    const profile = await pool.query(
-      'SELECT u.user_id, u.user_name, u.user_avatar, p.*, exp.*, edu.* FROM users u INNER JOIN profiles p ON p.profile_user_id = u.user_id LEFT JOIN LATERAL (SELECT json_agg(exp) as experience from experiences exp WHERE exp.experience_user_id = u.user_id) exp ON TRUE LEFT JOIN LATERAL (SELECT json_agg(edu) as education from educations edu WHERE edu.education_user_id = u.user_id) edu ON TRUE WHERE u.user_id::text = $1',
-      [req.params.user_id]
-    );
+    const profile = await db.getProfile(req.params.user_id);
 
     if (!profile.rows.length) {
       return res.status(400).json({ msg: 'Profile not found' });
@@ -150,18 +141,8 @@ router.get('/user/:user_id', async (req, res) => {
 
 router.delete('/', auth, async (req, res) => {
   try {
-    // @todo - remove users posts
-
-    // Remove profile
-    await pool.query(
-      'DELETE FROM profiles WHERE profile_user_id = $1 RETURNING *',
-      [req.user.id]
-    );
-
-    //Remove user
-    await pool.query('DELETE FROM users WHERE user_id = $1 RETURNING *', [
-      req.user.id,
-    ]);
+    //Remove user, profile, comments & likes
+    await db.deleteUser(req.user.id);
 
     res.json({ msg: 'User deleted' });
   } catch (err) {
@@ -211,18 +192,15 @@ router.post(
     };
 
     try {
-      const experience = await pool.query(
-        'INSERT INTO experiences (experience_user_id, experience_title, experience_company, experience_location, experience_from, experence_to, experience_current, experience_description) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
-        [
-          req.user.id,
-          experienceFields.title,
-          experienceFields.company,
-          experienceFields.location,
-          experienceFields.from,
-          experienceFields.to,
-          experienceFields.current,
-          experienceFields.description,
-        ]
+      const experience = await db.createNewExperience(
+        req.user.id,
+        experienceFields.title,
+        experienceFields.company,
+        experienceFields.location,
+        experienceFields.from,
+        experienceFields.to,
+        experienceFields.current,
+        experienceFields.description
       );
 
       res.json(experience.rows[0]);
@@ -239,10 +217,7 @@ router.post(
 
 router.delete('/experience/:exp_id', auth, async (req, res) => {
   try {
-    await pool.query(
-      'DELETE FROM experiences WHERE experience_id = $1 RETURNING *',
-      [req.params.exp_id]
-    );
+    await db.deleteExperience(req.params.exp_id);
 
     res.json({ msg: 'Experience deleted' });
   } catch (err) {
@@ -293,18 +268,15 @@ router.post(
     };
 
     try {
-      const education = await pool.query(
-        'INSERT INTO educations (education_user_id, education_school, education_degree, education_fieldofstudy, education_from, education_to, education_current, education_description) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
-        [
-          req.user.id,
-          educationFields.school,
-          educationFields.degree,
-          educationFields.fieldofstudy,
-          educationFields.from,
-          educationFields.to,
-          educationFields.current,
-          educationFields.description,
-        ]
+      const education = await db.createNewEducation(
+        req.user.id,
+        educationFields.school,
+        educationFields.degree,
+        educationFields.fieldofstudy,
+        educationFields.from,
+        educationFields.to,
+        educationFields.current,
+        educationFields.description
       );
 
       res.json(education.rows[0]);
@@ -321,10 +293,7 @@ router.post(
 
 router.delete('/education/:edu_id', auth, async (req, res) => {
   try {
-    await pool.query(
-      'DELETE FROM educations WHERE education_id = $1 RETURNING *',
-      [req.params.edu_id]
-    );
+    await db.deleteEducation(req.params.edu_id);
 
     res.json({ msg: 'Education deleted' });
   } catch (err) {
