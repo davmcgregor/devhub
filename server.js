@@ -2,6 +2,9 @@ require('dotenv').config()
 const express = require('express');
 
 const app = express();
+const cors = require("cors");
+
+app.use(cors());
 
 //Init Middleware
 app.use(express.json({ extended: false }));

@@ -21,7 +21,7 @@ export default function (state = initialState, action) {
   switch (type) {
     case USER_LOADED:
       return {
-        state,
+        ...state,
         isAuthenticated: true,
         loading: false,
         user: payload,
@@ -45,6 +45,7 @@ export default function (state = initialState, action) {
         token: null,
         isAuthenticated: false,
         loading: false,
+        user: null
       };
     default:
       return state;

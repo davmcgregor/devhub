@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, Fragment } from 'react';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 
 import Login from './components/auth/Login';
@@ -12,24 +12,30 @@ import PrivateRoute from './components/routing/PrivateRoute';
 // Redux
 import { Provider } from 'react-redux';
 import store from './store';
+import { LOGOUT } from './actions/types';
 import { loadUser } from './actions/auth';
 import setAuthToken from './utils/setAuthToken';
 
 import './App.css';
 
-if (localStorage.token) {
-  setAuthToken(localStorage.token);
-}
-
 const App = () => {
   useEffect(() => {
+    // check for token in LS
+    if (localStorage.token) {
+      setAuthToken(localStorage.token);
+    }
     store.dispatch(loadUser());
+
+    // log user out from all tabs if they log out in one tab
+    window.addEventListener('storage', () => {
+      if (!localStorage.token) store.dispatch({ type: LOGOUT });
+    });
   }, []);
 
   return (
     <Provider store={store}>
       <Router>
-        <>
+        <Fragment>
           <Navbar />
           <Route exact path='/' component={Landing} />
           <section className='container'>
@@ -40,7 +46,7 @@ const App = () => {
               <PrivateRoute exact path='/dashboard' component={Dashboard} />
             </Switch>
           </section>
-        </>
+        </Fragment>
       </Router>
     </Provider>
   );
