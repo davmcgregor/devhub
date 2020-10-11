@@ -162,7 +162,7 @@ router.post(
     [
       body('title', 'Title is required').not().isEmpty(),
       body('company', 'Company is required').not().isEmpty(),
-      body('from', 'From date is required').not().isEmpty()
+      body('exp_from', 'From date is required').not().isEmpty()
     ]
   ],
   async (req, res) => {
@@ -175,8 +175,8 @@ router.post(
       title,
       company,
       location,
-      from,
-      to,
+      exp_from,
+      exp_to,
       current,
       description
     } = req.body
@@ -185,8 +185,8 @@ router.post(
       title,
       company,
       location,
-      from,
-      to,
+      exp_from,
+      exp_to,
       current,
       description
     }
@@ -197,8 +197,8 @@ router.post(
         experienceFields.title,
         experienceFields.company,
         experienceFields.location,
-        experienceFields.from,
-        experienceFields.to,
+        experienceFields.exp_from,
+        experienceFields.exp_to,
         experienceFields.current,
         experienceFields.description
       )
@@ -238,7 +238,7 @@ router.post(
       body('school', 'School is required').not().isEmpty(),
       body('degree', 'Degree is required').not().isEmpty(),
       body('fieldofstudy', 'Field of study is required').not().isEmpty(),
-      body('from', 'From date is required').not().isEmpty()
+      body('edu_from', 'From date is required').not().isEmpty()
     ]
   ],
   async (req, res) => {
@@ -251,8 +251,8 @@ router.post(
       school,
       degree,
       fieldofstudy,
-      from,
-      to,
+      edu_from,
+      edu_to,
       current,
       description
     } = req.body
@@ -261,8 +261,8 @@ router.post(
       school,
       degree,
       fieldofstudy,
-      from,
-      to,
+      edu_from,
+      edu_to,
       current,
       description
     }
@@ -273,8 +273,8 @@ router.post(
         educationFields.school,
         educationFields.degree,
         educationFields.fieldofstudy,
-        educationFields.from,
-        educationFields.to,
+        educationFields.edu_from,
+        educationFields.edu_to,
         educationFields.current,
         educationFields.description
       )
