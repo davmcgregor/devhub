@@ -2,25 +2,25 @@ const db = require('./database/dbconfig')
 
 const getUserByToken = id => {
   return db.query(
-    'SELECT user_id, user_name, user_email, user_avatar, registered_at FROM users WHERE user_id = $1',
+    'SELECT u.id, name, email, avatar, registered_at FROM users u WHERE id = $1',
     [id]
   )
 }
 
 const getUser = email => {
-  return db.query('SELECT * FROM users WHERE user_email = $1', [email])
+  return db.query('SELECT * FROM users WHERE email = $1', [email])
 }
 
 const createNewUser = (name, email, hash, avatar) => {
   return db.query(
-    'INSERT INTO users (user_name, user_email, user_password, user_avatar) VALUES ($1, $2, $3, $4) RETURNING *',
+    'INSERT INTO users (name, email, password, avatar) VALUES ($1, $2, $3, $4) RETURNING *',
     [name, email, hash, avatar]
   )
 }
 
 const getUserProfile = id => {
   return db.query(
-    'SELECT user_id, user_name, user_avatar, p.* FROM users u INNER JOIN profiles p ON (p.profile_user_id = u.user_id) WHERE u.user_id = $1',
+    'SELECT u.id, name, avatar, p.* FROM users u INNER JOIN profiles p ON (p.user_id = u.id) WHERE u.id = $1',
     [id]
   )
 }
@@ -37,7 +37,7 @@ const createProfile = (
   social
 ) => {
   return db.query(
-    'INSERT INTO profiles (profile_user_id, company, website, location, status, skills, bio, githubusername, social) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) ON CONFLICT (profile_user_id) DO UPDATE SET company = $2, website = $3, location = $4, status = $5, skills = $6, bio = $7, githubusername = $8, social = $9 RETURNING *',
+    'INSERT INTO profiles (user_id, company, website, location, status, skills, bio, githubusername, social) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) ON CONFLICT (user_id) DO UPDATE SET company = $2, website = $3, location = $4, status = $5, skills = $6, bio = $7, githubusername = $8, social = $9 RETURNING *',
     [
       id,
       company,
@@ -54,19 +54,19 @@ const createProfile = (
 
 const getAllProfiles = () => {
   return db.query(
-    'SELECT u.user_id, u.user_name, u.user_avatar, p.*, exp.*, edu.* FROM users u INNER JOIN profiles p ON p.profile_user_id = u.user_id LEFT JOIN LATERAL (SELECT json_agg(exp) as experience from experiences exp WHERE exp.experience_user_id = u.user_id) exp ON TRUE LEFT JOIN LATERAL (SELECT json_agg(edu) as education from educations edu WHERE edu.education_user_id = u.user_id) edu ON TRUE'
+    'SELECT u.id, u.name, u.avatar, p.*, exp.*, edu.* FROM users u INNER JOIN profiles p ON p.user_id = u.id LEFT JOIN LATERAL (SELECT json_agg(exp) as experience from experiences exp WHERE exp.user_id = u.id) exp ON TRUE LEFT JOIN LATERAL (SELECT json_agg(edu) as education from educations edu WHERE edu.user_id = u.id) edu ON TRUE'
   )
 }
 
 const getProfile = id => {
   return db.query(
-    'SELECT u.user_id, u.user_name, u.user_avatar, p.*, exp.*, edu.* FROM users u INNER JOIN profiles p ON p.profile_user_id = u.user_id LEFT JOIN LATERAL (SELECT json_agg(exp) as experience from experiences exp WHERE exp.experience_user_id = u.user_id) exp ON TRUE LEFT JOIN LATERAL (SELECT json_agg(edu) as education from educations edu WHERE edu.education_user_id = u.user_id) edu ON TRUE WHERE u.user_id::text = $1',
+    'SELECT u.id, u.name, u.avatar, p.*, exp.*, edu.* FROM users u INNER JOIN profiles p ON p.user_id = u.id LEFT JOIN LATERAL (SELECT json_agg(exp) as experience from experiences exp WHERE exp.user_id = u.id) exp ON TRUE LEFT JOIN LATERAL (SELECT json_agg(edu) as education from educations edu WHERE edu.user_id = u.id) edu ON TRUE WHERE u.id::text = $1',
     [id]
   )
 }
 
 const deleteUser = id => {
-  return db.query('DELETE FROM users WHERE user_id = $1 RETURNING *', [id])
+  return db.query('DELETE FROM users WHERE id = $1 RETURNING *', [id])
 }
 
 const createNewExperience = (
@@ -80,16 +80,13 @@ const createNewExperience = (
   description
 ) => {
   return db.query(
-    'INSERT INTO experiences (experience_user_id, experience_title, experience_company, experience_location, experience_from, experence_to, experience_current, experience_description) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
+    'INSERT INTO experiences (user_id, title, company, location, exp_from, exp_to, current, description) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
     [id, title, company, location, from, to, current, description]
   )
 }
 
 const deleteExperience = id => {
-  return db.query(
-    'DELETE FROM experiences WHERE experience_id = $1 RETURNING *',
-    [id]
-  )
+  return db.query('DELETE FROM experiences WHERE id = $1 RETURNING *', [id])
 }
 
 const createNewEducation = (
@@ -103,85 +100,82 @@ const createNewEducation = (
   description
 ) => {
   return db.query(
-    'INSERT INTO educations (education_user_id, education_school, education_degree, education_fieldofstudy, education_from, education_to, education_current, education_description) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
+    'INSERT INTO educations (user_id, school, degree, fieldofstudy, edu_from, edu_to, current, description) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
     [id, school, degree, fieldofstudy, from, to, current, description]
   )
 }
 
 const deleteEducation = id => {
-  return db.query(
-    'DELETE FROM educations WHERE education_id = $1 RETURNING *',
-    [id]
-  )
+  return db.query('DELETE FROM educations WHERE id = $1 RETURNING *', [id])
 }
 
 const createPost = (id, text) => {
   return db.query(
-    'INSERT INTO posts (post_user_id, post_text, post_avatar) VALUES ($1, $2, (SELECT user_avatar FROM users WHERE user_id = $1)) RETURNING *',
+    'INSERT INTO posts (user_id, text, avatar) VALUES ($1, $2, (SELECT avatar FROM users WHERE id = $1)) RETURNING *',
     [id, text]
   )
 }
 
 const getAllPosts = () => {
   return db.query(
-    'SELECT p.*, l.*, c.* FROM posts p LEFT JOIN LATERAL (SELECT json_agg(l) as likes FROM likes l WHERE l.like_post_id = p.post_id) l ON TRUE LEFT JOIN LATERAL (SELECT json_agg(c) AS comments FROM comments c WHERE c.comment_post_id = p.post_id) c on TRUE ORDER BY p.post_created_at DESC'
+    'SELECT p.*, l.*, c.* FROM posts p LEFT JOIN LATERAL (SELECT json_agg(l) as likes FROM likes l WHERE l.post_id = p.id) l ON TRUE LEFT JOIN LATERAL (SELECT json_agg(c) AS comments FROM comments c WHERE c.post_id = p.id) c on TRUE ORDER BY p.created_at DESC'
   )
 }
 
 const getPost = id => {
   return db.query(
-    'SELECT p.*, l.*, c.* FROM posts p LEFT JOIN LATERAL (SELECT json_agg(l) as likes FROM likes l WHERE l.like_post_id = p.post_id) l ON TRUE LEFT JOIN LATERAL (SELECT json_agg(c) AS comments FROM comments c WHERE c.comment_post_id = p.post_id) c on TRUE WHERE p.post_id = $1',
+    'SELECT p.*, l.*, c.* FROM posts p LEFT JOIN LATERAL (SELECT json_agg(l) as likes FROM likes l WHERE l.post_id = p.id) l ON TRUE LEFT JOIN LATERAL (SELECT json_agg(c) AS comments FROM comments c WHERE c.post_id = p.id) c on TRUE WHERE p.id = $1',
     [id]
   )
 }
 
 const checkPost = id => {
-  return db.query('SELECT * FROM posts WHERE post_id = $1', [id])
+  return db.query('SELECT * FROM posts WHERE id = $1', [id])
 }
 
-const deletePost = (post_id, user_id) => {
+const deletePost = (id, user_id) => {
   return db.query(
-    'DELETE FROM posts WHERE post_id = $1 AND post_user_id = $2 RETURNING *',
-    [post_id, user_id]
+    'DELETE FROM posts WHERE id = $1 AND user_id = $2 RETURNING *',
+    [id, user_id]
   )
 }
 
 const checkLike = (post_id, user_id) => {
-  return db.query(
-    'SELECT * FROM likes WHERE like_post_id = $1 AND like_user_id = $2',
-    [post_id, user_id]
-  )
+  return db.query('SELECT * FROM likes WHERE post_id = $1 AND user_id = $2', [
+    post_id,
+    user_id
+  ])
 }
 
 const createLike = (post_id, user_id) => {
   return db.query(
-    'INSERT INTO likes (like_post_id, like_user_id) VALUES ($1, $2) RETURNING *',
+    'INSERT INTO likes (post_id, user_id) VALUES ($1, $2) RETURNING *',
     [post_id, user_id]
   )
 }
 
 const deleteLike = (post_id, user_id) => {
   return db.query(
-    'DELETE FROM likes WHERE like_post_id = $1 and like_user_id = $2 RETURNING *',
+    'DELETE FROM likes WHERE post_id = $1 and user_id = $2 RETURNING *',
     [post_id, user_id]
   )
 }
 
 const createComment = (user_id, post_id, text) => {
   return db.query(
-    'INSERT INTO comments(comment_user_id, comment_post_id, comment_text) VALUES ($1, $2, $3) RETURNING *',
+    'INSERT INTO comments(user_id, post_id, text) VALUES ($1, $2, $3) RETURNING *',
     [user_id, post_id, text]
   )
 }
 
 const checkComment = id => {
-  return db.query('SELECT * FROM comments WHERE comment_id = $1', [id])
+  return db.query('SELECT * FROM comments WHERE id = $1', [id])
 }
 
-const deleteComment = (comment_id, user_id) => {
+const deleteComment = (id, user_id) => {
   return db.query(
-    'DELETE FROM comments WHERE comment_id = $1 AND comment_user_id = $2 RETURNING *',
-    [comment_id, user_id]
+    'DELETE FROM comments WHERE id = $1 AND user_id = $2 RETURNING *',
+    [id, user_id]
   )
 }
 

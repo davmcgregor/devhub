@@ -72,7 +72,7 @@ router.post(
       // return jsonwebtoken
 
       jwt.sign(
-        { user: { id: newUser.rows[0].user_id } },
+        { user: { id: newUser.rows[0].id } },
         process.env.jwtSecret,
         { expiresIn: 3600 },
         (err, token) => {

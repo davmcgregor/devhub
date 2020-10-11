@@ -51,7 +51,7 @@ router.post(
           .json({ errors: [{ msg: 'Invalid credentials' }] })
       }
 
-      const isMatch = await bcrypt.compare(password, user.rows[0].user_password)
+      const isMatch = await bcrypt.compare(password, user.rows[0].password)
 
       if (!isMatch) {
         return res
@@ -62,7 +62,7 @@ router.post(
       // return jsonwebtoken
 
       jwt.sign(
-        { user: { id: user.rows[0].user_id } },
+        { user: { id: user.rows[0].id } },
         process.env.jwtSecret,
         { expiresIn: 3600 },
         (err, token) => {

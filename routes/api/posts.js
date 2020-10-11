@@ -202,15 +202,15 @@ router.post(
   }
 )
 
-// @route DELETE api/posts/commnet/:id/:comment_id
+// @route DELETE api/posts/comment/:post_id/:comment_id
 // @desc Delete comment
 // @access Private
 
-router.delete('/comment/:id/:comment_id', auth, async (req, res) => {
+router.delete('/comment/:post_id/:comment_id', auth, async (req, res) => {
   try {
     //check post exists
 
-    const checkPost = await db.checkPost(req.params.id)
+    const checkPost = await db.checkPost(req.params.post_id)
 
     if (!checkPost.rows.length) {
       return res.status(404).json({ msg: 'Post not found' })
