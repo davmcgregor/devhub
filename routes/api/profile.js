@@ -13,7 +13,7 @@ const db = require('../../db')
 
 router.get('/me', auth, async (req, res) => {
   try {
-    const profile = await db.getUserProfile(req.user.id)
+    const profile = await db.getProfile(req.user.id)
 
     if (!profile.rows.length) {
       return res.status(400).json({ msg: 'There is no profile for this user' })
