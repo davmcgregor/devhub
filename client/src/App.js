@@ -1,17 +1,7 @@
 import React, { useEffect, Fragment } from 'react'
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
 
-import Login from './components/auth/Login'
-import Register from './components/auth/Register'
-import Navbar from './components/layout/Navbar'
-import Landing from './components/layout/Landing'
-import Alert from './components/layout/Alert'
-import Dashboard from './components/dashboard/Dashboard'
-import PrivateRoute from './components/routing/PrivateRoute'
-import ProfileForm from './components/profile-forms/ProfileForm'
-import AddExperience from './components/profile-forms/AddExperience'
-import AddEducation from './components/profile-forms/AddEducation'
-
+import { Navbar, Landing, Routes } from './components'
 
 // Redux
 import { Provider } from 'react-redux'
@@ -41,35 +31,10 @@ const App = () => {
       <Router>
         <Fragment>
           <Navbar />
-          <Route exact path="/" component={Landing} />
-          <section className="container">
-            <Alert />
-            <Switch>
-              <Route exact path="/register" component={Register} />
-              <Route exact path="/login" component={Login} />
-              <PrivateRoute exact path="/dashboard" component={Dashboard} />
-              <PrivateRoute
-                exact
-                path="/create-profile"
-                component={ProfileForm}
-              />
-               <PrivateRoute
-                exact
-                path="/edit-profile"
-                component={ProfileForm}
-              />
-               <PrivateRoute
-                exact
-                path="/add-experience"
-                component={AddExperience}
-              />
-              <PrivateRoute
-                exact
-                path="/add-education"
-                component={AddEducation}
-              />
-            </Switch>
-          </section>
+          <Switch>
+            <Route exact path="/" component={Landing} />
+            <Route component={Routes} />
+          </Switch>
         </Fragment>
       </Router>
     </Provider>
