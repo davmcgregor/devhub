@@ -1,12 +1,12 @@
-require('dotenv').config();
-const express = require('express');
-const router = express.Router();
-const gravatar = require('gravatar');
-const { body, validationResult } = require('express-validator');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+require('dotenv').config()
+const express = require('express')
+const router = express.Router()
+const gravatar = require('gravatar')
+const { body, validationResult } = require('express-validator')
+const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
 
-const db = require("../../db");
+const db = require('../../db')
 
 // @route    POST api/users
 // @desc     Register user
@@ -20,25 +20,25 @@ router.post(
     body(
       'password',
       'Please enter a password with 6 or more characters'
-    ).isLength({ min: 6 }),
+    ).isLength({ min: 6 })
   ],
   async (req, res) => {
-    const errors = validationResult(req);
+    const errors = validationResult(req)
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      return res.status(400).json({ errors: errors.array() })
     }
 
-    const { name, email, password } = req.body;
+    const { name, email, password } = req.body
 
     try {
       // See if user exists
-      
-      let user = await db.getUser(email);
+
+      let user = await db.getUser(email)
 
       if (user.rows.length) {
         return res
           .status(400)
-          .json({ errors: [{ msg: 'User already exists' }] });
+          .json({ errors: [{ msg: 'User already exists' }] })
       }
 
       // Get users gravatar
@@ -46,29 +46,29 @@ router.post(
       const avatar = gravatar.url(email, {
         s: '200',
         r: 'pg',
-        d: 'mm',
-      });
+        d: 'mm'
+      })
 
       // Encrypt Passwprd
 
-      const salt = await bcrypt.genSalt(10);
+      const salt = await bcrypt.genSalt(10)
       if (!salt) {
         return res
           .status(400)
-          .json({ errors: [{ msg: 'Something went wrong with bcrypt' }] });
+          .json({ errors: [{ msg: 'Something went wrong with bcrypt' }] })
       }
 
-      const hash = await bcrypt.hash(password, salt);
+      const hash = await bcrypt.hash(password, salt)
       if (!hash) {
         return res.status(400).json({
-          errors: [{ msg: 'Something went wrong hashing the password' }],
-        });
+          errors: [{ msg: 'Something went wrong hashing the password' }]
+        })
       }
 
       // save User
-      
+
       const newUser = await db.createNewUser(name, email, hash, avatar)
-      
+
       // return jsonwebtoken
 
       jwt.sign(
@@ -76,14 +76,14 @@ router.post(
         process.env.jwtSecret,
         { expiresIn: 3600 },
         (err, token) => {
-          if (err) throw err;
-          res.json({ token });
+          if (err) throw err
+          res.json({ token })
         }
-      );
+      )
     } catch (err) {
-      res.status(500).json({ errors: [{ msg: err.message }] });
+      res.status(500).json({ errors: [{ msg: err.message }] })
     }
   }
-);
+)
 
-module.exports = router;
+module.exports = router
