@@ -29,7 +29,6 @@ export default function (state = initialState, action) {
         loading: false
       }
     case REMOVE_EXPERIENCE:
-      ...state  
       return state.profile.profile.filter(experience => experience.id !== payload)
     case GET_PROFILES:
       return {
