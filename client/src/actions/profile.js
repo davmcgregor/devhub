@@ -9,7 +9,6 @@ import {
   CLEAR_PROFILE,
   ACCOUNT_DELETED,
   GET_REPOS,
-  REMOVE_EXPERIENCE
 } from './types'
 
 // Get current users profile
@@ -50,12 +49,6 @@ export const getProfiles = () => async dispatch => {
       payload: res.data
     })
   } catch (err) {
-
-    const errors = err.response.data.errors
-
-    if (errors) {
-      errors.forEach(error => dispatch(setAlert(error.msg, 'danger')))
-    }
 
     dispatch({
       type: PROFILE_ERROR,
@@ -228,9 +221,9 @@ export const addEducation = (formData, history) => async dispatch => {
 
 export const deleteExperience = (id) => async dispatch => {
   try {
-    await axios.delete(`/api/profile/experience/${id}`)
+    const res = await axios.delete(`/api/profile/experience/${id}`)
 
-    dispatch({ type: REMOVE_EXPERIENCE, payload: id})
+    dispatch({ type: UPDATE_PROFILE, payload: res.data })
 
     dispatch(setAlert('Experience Removed', 'success'))
 
