@@ -4,6 +4,7 @@ import {
   PROFILE_ERROR,
   UPDATE_PROFILE,
   CLEAR_PROFILE,
+  REMOVE_EXPERIENCE,
   ACCOUNT_DELETED,
   GET_REPOS
 } from '../actions/types'
@@ -27,6 +28,9 @@ export default function (state = initialState, action) {
         profile: payload,
         loading: false
       }
+    case REMOVE_EXPERIENCE:
+      ...state  
+      return state.profile.profile.filter(experience => experience.id !== payload)
     case GET_PROFILES:
       return {
         ...state,

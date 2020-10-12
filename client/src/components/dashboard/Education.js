@@ -11,8 +11,8 @@ const Education = ({ education, deleteEducation }) => {
       <td className="hide-sm">{edu.degree}</td>
       <td>
         <Moment format="YYYY/MM/DD">{edu.edu_from}</Moment> -{' '}
-        {edu.edu_to === null ? (
-          ' Now'
+        {edu.edu_to === "" ? (
+          ' Current'
         ) : (
           <Moment format="YYYY/MM/DD">{edu.edu_to}</Moment>
         )}
