@@ -116,13 +116,13 @@ router.get('/', async (req, res) => {
   }
 })
 
-// @route GET api/profile/user/:user_id
+// @route GET api/profile/:profile_id
 // @desc Get profile by user ID
 // @access Public
 
-router.get('/user/:user_id', async (req, res) => {
+router.get('/:profile_id', async (req, res) => {
   try {
-    const profile = await db.getProfile(req.params.user_id)
+    const profile = await db.getProfile(req.params.profile_id)
 
     if (!profile.rows.length) {
       return res.status(400).json({ msg: 'Profile not found' })
