@@ -3,6 +3,8 @@ import PropTypes from 'prop-types'
 import { Link } from 'react-router-dom'
 import { connect } from 'react-redux'
 import Spinner from '../layout/Spinner'
+import ProfileTop from './ProfileTop'
+import ProfileAbout from './ProfileAbout'
 import { getProfileById } from '../../actions/profile'
 
 const Profile = ({
@@ -14,7 +16,7 @@ const Profile = ({
   useEffect(() => {
     getProfileById(match.params.id)
   }, [getProfileById, match.params.id])
-  
+
   return (
     <Fragment>
       {profile === null || loading ? (
@@ -31,11 +33,10 @@ const Profile = ({
                 Edit Profile
               </Link>
             )}
-            {console.log('auth', auth.isAuthenticated)}
-            {console.log('loading', auth.loading)}
-            {console.log('user', auth.user.id)}
-            {console.log('profile', profile.name)}
-
+          <div className="profile-grid my-1">
+            <ProfileTop profile={profile} />
+            <ProfileAbout profile={profile} />
+          </div>
         </Fragment>
       )}
     </Fragment>

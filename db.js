@@ -58,7 +58,14 @@ const getAllProfiles = () => {
   )
 }
 
-const getProfile = id => {
+const getProfileByUserId = id => {
+  return db.query(
+    'SELECT u.id, u.name, u.avatar, p.*, exp.*, edu.* FROM users u INNER JOIN profiles p ON p.user_id = u.id LEFT JOIN LATERAL (SELECT json_agg(exp) as experience from experiences exp WHERE exp.user_id = u.id) exp ON TRUE LEFT JOIN LATERAL (SELECT json_agg(edu) as education from educations edu WHERE edu.user_id = u.id) edu ON TRUE WHERE u.id = $1',
+    [id]
+  )
+}
+
+const getProfileByProfileId = id => {
   return db.query(
     'SELECT u.id, u.name, u.avatar, p.*, exp.*, edu.* FROM users u INNER JOIN profiles p ON p.user_id = u.id LEFT JOIN LATERAL (SELECT json_agg(exp) as experience from experiences exp WHERE exp.user_id = u.id) exp ON TRUE LEFT JOIN LATERAL (SELECT json_agg(edu) as education from educations edu WHERE edu.user_id = u.id) edu ON TRUE WHERE p.id = $1',
     [id]
@@ -186,7 +193,8 @@ module.exports = {
   getUserProfile,
   createProfile,
   getAllProfiles,
-  getProfile,
+  getProfileByUserId,
+  getProfileByProfileId,
   deleteUser,
   createNewExperience,
   deleteExperience,
