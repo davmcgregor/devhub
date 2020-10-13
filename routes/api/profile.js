@@ -219,9 +219,7 @@ router.delete('/experience/:exp_id', auth, async (req, res) => {
   try {
     await db.deleteExperience(req.params.exp_id)
 
-    const updatedProfile = await db.getProfile(req.user.id)
-
-    res.json(updatedProfile.rows[0])
+    res.json({ msg: 'Experience deleted' })
   } catch (err) {
     console.error(err.message)
     res.status(500).send('Server Error')
@@ -297,9 +295,7 @@ router.delete('/education/:edu_id', auth, async (req, res) => {
   try {
     await db.deleteEducation(req.params.edu_id)
 
-    const updatedProfile = await db.getProfile(req.user.id)
-
-    res.json(updatedProfile.rows[0])
+    res.json({ msg: 'Education deleted' })
   } catch (err) {
     console.error(err.message)
     res.status(500).send('Server Error')
