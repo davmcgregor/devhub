@@ -118,7 +118,7 @@ const deleteEducation = id => {
 
 const createPost = (id, text) => {
   return db.query(
-    'INSERT INTO posts (user_id, text, avatar) VALUES ($1, $2, (SELECT avatar FROM users WHERE id = $1)) RETURNING *',
+    'INSERT INTO posts (user_id, text, avatar, name) VALUES ($1, $2, (SELECT avatar FROM users WHERE id = $1), (SELECT name FROM users WHERE id = $1)) RETURNING *',
     [id, text]
   )
 }
