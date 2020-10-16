@@ -32,9 +32,8 @@ const PostItem = ({
             type="button"
             className="btn btn-light"
           >
-            {console.log(likes.length)}
             <i className="fas fa-thumbs-up"></i>{' '}
-            <span>{likes.length > 0 && <span>{likes.length}</span>}</span>
+            <span>{likes && likes.length > 0 && <span>{likes.length}</span>}</span>
           </button>
           <button
             onClick={e => removeLike(id)}
