@@ -120,9 +120,13 @@ router.post('/like/:id', auth, async (req, res) => {
 
     // Create like
 
-    const newLike = await db.createLike(req.params.id, req.user.id)
+    await db.createLike(req.params.id, req.user.id)
 
-    res.json(newLike.rows[0])
+    // Return the likes for that post
+
+    const allLikes = await db.allLikes(req.params.id)
+
+    res.json(allLikes.rows[0]["coalesce"])
   } catch (err) {
     console.error(err.message)
     res.status(500).send('Server Error')
@@ -155,9 +159,13 @@ router.delete('/unlike/:id', auth, async (req, res) => {
 
     // Delete like
 
-    const deleteLike = await db.deleteLike(req.params.id, req.user.id)
+    await db.deleteLike(req.params.id, req.user.id)
 
-    res.json({ msg: 'Post unliked' })
+    // Return the likes for that post
+
+    const allLikes = await db.allLikes(req.params.id)
+
+    res.json(allLikes.rows[0]["coalesce"])
   } catch (err) {
     console.error(err.message)
     res.status(500).send('Server Error')

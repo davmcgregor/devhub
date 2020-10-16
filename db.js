@@ -125,13 +125,13 @@ const createPost = (id, text) => {
 
 const getAllPosts = () => {
   return db.query(
-    'SELECT p.*, l.*, c.* FROM posts p LEFT JOIN LATERAL (SELECT json_agg(l) as likes FROM likes l WHERE l.post_id = p.id) l ON TRUE LEFT JOIN LATERAL (SELECT json_agg(c) AS comments FROM comments c WHERE c.post_id = p.id) c on TRUE ORDER BY p.created_at DESC'
+    "SELECT p.*, l.*, c.* FROM posts p LEFT JOIN LATERAL (SELECT coalesce(json_agg(l), '[]'::json) as likes FROM likes l WHERE l.post_id = p.id) l ON TRUE LEFT JOIN LATERAL (SELECT coalesce(json_agg(c), '[]'::json) AS comments FROM comments c WHERE c.post_id = p.id) c on TRUE ORDER BY p.created_at DESC"
   )
 }
 
 const getPost = id => {
   return db.query(
-    'SELECT p.*, l.*, c.* FROM posts p LEFT JOIN LATERAL (SELECT json_agg(l) as likes FROM likes l WHERE l.post_id = p.id) l ON TRUE LEFT JOIN LATERAL (SELECT json_agg(c) AS comments FROM comments c WHERE c.post_id = p.id) c on TRUE WHERE p.id = $1',
+    "SELECT p.*, l.*, c.* FROM posts p LEFT JOIN LATERAL (SELECT coalesce(json_agg(l), '[]'::json) as likes FROM likes l WHERE l.post_id = p.id) l ON TRUE LEFT JOIN LATERAL (SELECT coalesce(json_agg(c), '[]'::json) AS comments FROM comments c WHERE c.post_id = p.id) c on TRUE WHERE p.id = $1",
     [id]
   )
 }
@@ -168,6 +168,9 @@ const deleteLike = (post_id, user_id) => {
   )
 }
 
+const allLikes = post_id => {
+  return db.query("SELECT coalesce(json_agg(l.*), '[]'::json) from (SELECT * FROM likes where post_id = $1) l", [post_id])
+}
 const createComment = (user_id, post_id, text) => {
   return db.query(
     'INSERT INTO comments(user_id, post_id, text) VALUES ($1, $2, $3) RETURNING *',
@@ -208,6 +211,7 @@ module.exports = {
   checkLike,
   createLike,
   deleteLike,
+  allLikes,
   createComment,
   checkComment,
   deleteComment
