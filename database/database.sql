@@ -83,6 +83,8 @@ CREATE TABLE comments (
     user_id uuid NOT NULL,
     post_id INT NOT NULL,
     text TEXT NOT NULL,
+    avatar VARCHAR(255),
+    name VARCHAR(255),
     created_at timestamptz DEFAULT Now(),
     PRIMARY KEY(id),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,

@@ -169,11 +169,15 @@ const deleteLike = (post_id, user_id) => {
 }
 
 const allLikes = post_id => {
-  return db.query("SELECT coalesce(json_agg(l.*), '[]'::json) from (SELECT * FROM likes where post_id = $1) l", [post_id])
+  return db.query(
+    "SELECT coalesce(json_agg(l.*), '[]'::json) from (SELECT * FROM likes where post_id = $1) l",
+    [post_id]
+  )
 }
+
 const createComment = (user_id, post_id, text) => {
   return db.query(
-    'INSERT INTO comments(user_id, post_id, text) VALUES ($1, $2, $3) RETURNING *',
+    'INSERT INTO comments(user_id, post_id, text, avatar, name) VALUES ($1, $2, $3, (SELECT avatar FROM users WHERE id = $1), (SELECT name FROM users WHERE id = $1)) RETURNING *',
     [user_id, post_id, text]
   )
 }
@@ -186,6 +190,13 @@ const deleteComment = (id, user_id) => {
   return db.query(
     'DELETE FROM comments WHERE id = $1 AND user_id = $2 RETURNING *',
     [id, user_id]
+  )
+}
+
+const allComments = post_id => {
+  return db.query(
+    "SELECT coalesce(json_agg(c.*), '[]'::json) from (SELECT * FROM comments where post_id = $1) c",
+    [post_id]
   )
 }
 
@@ -214,5 +225,6 @@ module.exports = {
   allLikes,
   createComment,
   checkComment,
-  deleteComment
+  deleteComment,
+  allComments
 }

@@ -126,7 +126,7 @@ router.post('/like/:id', auth, async (req, res) => {
 
     const allLikes = await db.allLikes(req.params.id)
 
-    res.json(allLikes.rows[0]["coalesce"])
+    res.json(allLikes.rows[0]['coalesce'])
   } catch (err) {
     console.error(err.message)
     res.status(500).send('Server Error')
@@ -165,7 +165,7 @@ router.delete('/unlike/:id', auth, async (req, res) => {
 
     const allLikes = await db.allLikes(req.params.id)
 
-    res.json(allLikes.rows[0]["coalesce"])
+    res.json(allLikes.rows[0]['coalesce'])
   } catch (err) {
     console.error(err.message)
     res.status(500).send('Server Error')
@@ -196,13 +196,15 @@ router.post(
         return res.status(404).json({ msg: 'Post not found' })
       }
 
-      const newComment = await db.createComment(
-        req.user.id,
-        req.params.id,
-        text
-      )
+      // create comment
 
-      res.json(newComment.rows[0])
+      await db.createComment(req.user.id, req.params.id, text)
+
+      // Return the comments for that post
+
+      const allComments = await db.allComments(req.params.id)
+
+      res.json(allComments.rows[0]['coalesce'])
     } catch (err) {
       console.error(err.message)
       res.status(500).send('Server Error')
@@ -243,7 +245,11 @@ router.delete('/comment/:post_id/:comment_id', auth, async (req, res) => {
       return res.status(401).json({ msg: 'User not authorised' })
     }
 
-    res.json({ msg: 'Comment removed' })
+    // Return the comments for that post
+
+    const allComments = await db.allComments(req.params.post_id)
+
+    res.json(allComments.rows[0]['coalesce'])
   } catch (err) {
     console.error(err.message)
     res.status(500).send('Server Error')
