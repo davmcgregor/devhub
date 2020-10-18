@@ -1,8 +1,8 @@
-# [Live site](https://protected-dusk-01067.herokuapp.com/)
-
-![DevHub](devhub-screenshot.png)
+# [DevHub](https://protected-dusk-01067.herokuapp.com/)
 
 Social network app for developers including authentication, profiles and forum posts.
+
+![DevHub](devhub-screenshot.png)
 
 This project was built following the excellent **MERN Stack Front To Back: Full Stack React, Redux & Node.js** [Udemy Course](https://www.udemy.com/course/mern-stack-front-to-back/) by Brad Traversy.
 
