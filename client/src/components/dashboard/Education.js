@@ -1,20 +1,22 @@
 import React, { Fragment } from 'react'
 import PropTypes from 'prop-types'
 import Moment from 'react-moment'
+import moment from 'moment'
 import { connect } from 'react-redux'
 import { deleteEducation } from '../../actions/profile'
 
 const Education = ({ education, deleteEducation }) => {
+  
   const educations = education.map(edu => (
     <tr key={edu.id}>
       <td>{edu.school}</td>
       <td className="hide-sm">{edu.degree}</td>
       <td>
-        <Moment format="YYYY/MM/DD">{edu.edu_from}</Moment> -{' '}
+        <Moment format="YYYY/MM/DD">{moment.utc(edu.edu_from)}</Moment> -{' '}
         {edu.edu_to === "" ? (
           ' Current'
         ) : (
-          <Moment format="YYYY/MM/DD">{edu.edu_to}</Moment>
+          <Moment format="YYYY/MM/DD">{moment.utc(edu.edu_to)}</Moment>
         )}
       </td>
       <td>
@@ -40,7 +42,7 @@ const Education = ({ education, deleteEducation }) => {
             <th />
           </tr>
         </thead>
-        <tbody>{educations}</tbody>
+        <tbody>{education.length > 0 ? educations : null}</tbody>
       </table>
     </Fragment>
   )

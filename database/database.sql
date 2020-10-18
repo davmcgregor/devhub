@@ -2,13 +2,21 @@ CREATE DATABASE devhub;
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+CREATE OR REPLACE FUNCTION trigger_set_timestamp()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
 CREATE TABLE users (
     id uuid DEFAULT uuid_generate_v4(),
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     avatar VARCHAR(255),
-    registered_at timestamptz DEFAULT Now(),
+    created_at timestamptz DEFAULT Now(),
     PRIMARY KEY(id)
 );
 
@@ -23,11 +31,18 @@ CREATE TABLE profiles (
     bio VARCHAR(255),
     githubusername VARCHAR(255),
     social jsonb,
-    edited_at timestamptz DEFAULT Now(),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     PRIMARY KEY(id),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 CREATE UNIQUE INDEX user_unique_idx on profiles (user_id);
+
+CREATE TRIGGER set_timestamp
+BEFORE UPDATE ON profiles
+FOR EACH ROW
+EXECUTE PROCEDURE trigger_set_timestamp();
+
 
 CREATE TABLE experiences (
     id SERIAL,
@@ -82,6 +97,7 @@ CREATE TABLE comments (
     id SERIAL,
     user_id uuid NOT NULL,
     post_id INT NOT NULL,
+    profile_id INT NOT NULL,
     text TEXT NOT NULL,
     avatar VARCHAR(255),
     name VARCHAR(255),

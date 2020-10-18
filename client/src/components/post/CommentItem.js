@@ -7,21 +7,21 @@ import { deleteComment } from '../../actions/post'
 
 const CommentItem = ({
   postId,
-  comment: { id, text, name, avatar, user_id, created_at },
+  comment: { id, user_id, profile_id, text, name, avatar, created_at },
   auth,
   deleteComment
 }) => {
   return (
-    <div class="post bg-white p-1 my-1">
+    <div className="post bg-white p-1 my-1">
       <div>
-        <Link to={`/profile/${user_id}`}>
-          <img class="round-img" src={avatar} alt="" />
+        <Link to={`/profile/${profile_id}`}>
+          <img className="round-img" src={avatar} alt="" />
           <h4>{name}</h4>
         </Link>
       </div>
       <div>
-        <p class="my-1">{text}</p>
-        <p class="post-date">
+        <p className="my-1">{text}</p>
+        <p className="post-date">
           Posted on <Moment format="YYYY-MM-DD HH:mm">{created_at}</Moment>
         </p>
         {!auth.loading && user_id === auth.user.id && (

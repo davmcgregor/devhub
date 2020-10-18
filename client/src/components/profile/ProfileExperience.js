@@ -1,6 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import Moment from 'react-moment';
+import moment from 'moment';
 
 const ProfileExperience = ({
   experience: { company, title, location, current, exp_to, exp_from, description }
@@ -9,8 +10,8 @@ const ProfileExperience = ({
     <div>
       <h3 className="text-dark">{company}</h3>
       <p>
-        <Moment format="YYYY/MM/DD">{exp_from}</Moment> - 
-        {!exp_to ? ' Now' : <Moment format="YYYY/MM/DD">{exp_to}</Moment>}
+        <Moment format="YYYY/MM/DD">{moment.utc(exp_from)}</Moment> -{" "} 
+        {!exp_to ? ' Now' : <Moment format="YYYY/MM/DD">{moment.utc(exp_to)}</Moment>}
       </p>
       <p>
         <strong>Position: </strong> {title}

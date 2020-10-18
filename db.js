@@ -2,7 +2,7 @@ const db = require('./database/dbconfig')
 
 const getUserByToken = id => {
   return db.query(
-    'SELECT u.id, name, email, avatar, registered_at FROM users u WHERE id = $1',
+    'SELECT u.id, name, email, avatar, created_at FROM users u WHERE id = $1',
     [id]
   )
 }
@@ -54,20 +54,20 @@ const createProfile = (
 
 const getAllProfiles = () => {
   return db.query(
-    'SELECT u.id, u.name, u.avatar, p.*, exp.*, edu.* FROM users u INNER JOIN profiles p ON p.user_id = u.id LEFT JOIN LATERAL (SELECT json_agg(exp) as experience from experiences exp WHERE exp.user_id = u.id) exp ON TRUE LEFT JOIN LATERAL (SELECT json_agg(edu) as education from educations edu WHERE edu.user_id = u.id) edu ON TRUE'
+    "SELECT u.id, u.name, u.avatar, p.*, exp.*, edu.* FROM users u INNER JOIN profiles p ON p.user_id = u.id LEFT JOIN LATERAL (SELECT coalesce(json_agg(exp), '[]'::json) as experience from experiences exp WHERE exp.user_id = u.id) exp ON TRUE LEFT JOIN LATERAL (SELECT coalesce(json_agg(edu), '[]'::json) as education from educations edu WHERE edu.user_id = u.id) edu ON TRUE"
   )
 }
 
 const getProfileByUserId = id => {
   return db.query(
-    'SELECT u.id, u.name, u.avatar, p.*, exp.*, edu.* FROM users u INNER JOIN profiles p ON p.user_id = u.id LEFT JOIN LATERAL (SELECT json_agg(exp) as experience from experiences exp WHERE exp.user_id = u.id) exp ON TRUE LEFT JOIN LATERAL (SELECT json_agg(edu) as education from educations edu WHERE edu.user_id = u.id) edu ON TRUE WHERE u.id = $1',
+    "SELECT u.id, u.name, u.avatar, p.*, exp.*, edu.* FROM users u INNER JOIN profiles p ON p.user_id = u.id LEFT JOIN LATERAL (SELECT coalesce(json_agg(exp), '[]'::json) as experience from experiences exp WHERE exp.user_id = u.id) exp ON TRUE LEFT JOIN LATERAL (SELECT coalesce(json_agg(edu), '[]'::json) as education from educations edu WHERE edu.user_id = u.id) edu ON TRUE WHERE u.id = $1",
     [id]
   )
 }
 
 const getProfileByProfileId = id => {
   return db.query(
-    'SELECT u.id, u.name, u.avatar, p.*, exp.*, edu.* FROM users u INNER JOIN profiles p ON p.user_id = u.id LEFT JOIN LATERAL (SELECT json_agg(exp) as experience from experiences exp WHERE exp.user_id = u.id) exp ON TRUE LEFT JOIN LATERAL (SELECT json_agg(edu) as education from educations edu WHERE edu.user_id = u.id) edu ON TRUE WHERE p.id = $1',
+    "SELECT u.id, u.name, u.avatar, p.*, exp.*, edu.* FROM users u INNER JOIN profiles p ON p.user_id = u.id LEFT JOIN LATERAL (SELECT coalesce(json_agg(exp), '[]'::json) as experience from experiences exp WHERE exp.user_id = u.id) exp ON TRUE LEFT JOIN LATERAL (SELECT coalesce(json_agg(edu), '[]'::json) as education from educations edu WHERE edu.user_id = u.id) edu ON TRUE WHERE p.id = $1",
     [id]
   )
 }
@@ -177,7 +177,7 @@ const allLikes = post_id => {
 
 const createComment = (user_id, post_id, text) => {
   return db.query(
-    'INSERT INTO comments(user_id, post_id, text, avatar, name) VALUES ($1, $2, $3, (SELECT avatar FROM users WHERE id = $1), (SELECT name FROM users WHERE id = $1)) RETURNING *',
+    'INSERT INTO comments(user_id, post_id, text, avatar, name, profile_id) VALUES ($1, $2, $3, (SELECT avatar FROM users WHERE id = $1), (SELECT name FROM users WHERE id = $1), (SELECT id FROM profiles WHERE user_id = $1)) RETURNING *',
     [user_id, post_id, text]
   )
 }
