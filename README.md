@@ -8,7 +8,7 @@ This project was built following the excellent **MERN Stack Front To Back: Full 
 
 ## Features
 
-* Full stack social network app with React, Redux, Node, and Express. (MongoDB replaced with Postgresql)
+* Full stack social network app with React, Redux, Node, and Express. **MongoDB replaced with PostgreSQL**
 * Backend API with Express
 * Stateless JWT authentication practices
 * React integrated with Express
