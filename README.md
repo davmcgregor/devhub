@@ -1,4 +1,4 @@
-# [DevHub](https://protected-dusk-01067.herokuapp.com/)
+# [DevHub](https://devhub-project.herokuapp.com/)
 
 Social network app for developers including authentication, profiles and forum posts.
 
